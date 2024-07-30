@@ -10,12 +10,12 @@ namespace HolidaySearch.Test
     public class SearchTest
     {
         private ISearchService _searchService;
-        private List<Flight> _flights;
-        private List<Hotel> _hotels;
+        private List<Flight>? _flights;
+        private List<Hotel>? _hotels;
         [TestInitialize]
         public void Init()
         {
-           
+
             using (StreamReader r = new StreamReader(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"InputData\hotels.json")))
             {
                 string json = r.ReadToEnd();
@@ -40,8 +40,8 @@ namespace HolidaySearch.Test
                 Duration = 7
             };
             var result = _searchService.Search(search);
-            Assert.IsNotNull(result);                     
-            Assert.AreEqual("Flight 2 and Hotel 9",String.Format("Flight {0} and Hotel {1}", result.Flight.Id, result.Hotel.Id));          
+            Assert.IsNotNull(result);
+            Assert.AreEqual("Flight 2 and Hotel 9", String.Format("Flight {0} and Hotel {1}", result.Flight.Id, result.Hotel.Id));
         }
         [TestMethod]
         public void AnyAirportToMallorcaAirport()
@@ -54,7 +54,7 @@ namespace HolidaySearch.Test
                 Duration = 10
             };
             var result = _searchService.Search(search);
-            Assert.IsNotNull(result);           
+            Assert.IsNotNull(result);
             Assert.AreEqual("Flight 6 and Hotel 5", String.Format("Flight {0} and Hotel {1}", result.Flight.Id, result.Hotel.Id));
         }
         [TestMethod]
@@ -70,6 +70,23 @@ namespace HolidaySearch.Test
             var result = _searchService.Search(search);
             Assert.IsNotNull(result);
             Assert.AreEqual("Flight 7 and Hotel 6", String.Format("Flight {0} and Hotel {1}", result.Flight.Id, result.Hotel.Id));
+        }
+        [TestMethod]
+        public void NoMatchHoliday()
+        {
+            var search = new SearchVM
+            {
+                DepartingFrom = "ABC",
+                TravelingTo = "CDF",
+                DepartureDate = Convert.ToDateTime("2023/07/01"),
+                Duration = 50
+            };
+            var result = _searchService.Search(search);
+           
+            Assert.IsNull(result.Hotel);
+            Assert.IsNull(result.Flight);
+            Assert.IsNotNull(result.ErrorMessage);
+            Assert.AreEqual("Sorry, we couldn't find the holiday you're looking for.", result.ErrorMessage);
         }
     }
 }

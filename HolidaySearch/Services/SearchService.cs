@@ -20,12 +20,12 @@ namespace HolidaySearch.Services
         }
         public Result Search(SearchVM search)
         {
+            var holidays = new List<Result>();
 
-            var matchingFlights = _flights.Where(f => (f.From == search.DepartingFrom || search.DepartingFrom == String.Empty) && f.To == search.TravelingTo && f.DepartureDate == search.DepartureDate).ToList();
+            var matchingFlights = _flights.Where(f => (f.From == search.DepartingFrom || string.IsNullOrEmpty(search.DepartingFrom)) && (f.To == search.TravelingTo || string.IsNullOrEmpty(search.TravelingTo)) && (f.DepartureDate == search.DepartureDate || search.DepartureDate == null)).ToList();
 
             var matchingHotels = _hotels.Where(h => h.LocalAirports.Contains(search.TravelingTo) && h.ArrivalDate <= search.DepartureDate && h.NoOfNights >= search.Duration).ToList();
 
-            var holidays = new List<Result>();
 
             foreach (var flight in matchingFlights)
             {
@@ -34,7 +34,8 @@ namespace HolidaySearch.Services
                     holidays.Add(new Result(hotel, flight));
                 }
             }
-
+            if (holidays.Count == 0)
+                return new Result("Sorry, we couldn't find the holiday you're looking for.");
             return holidays.OrderBy(h => h.Flight.Price + (h.Hotel.PricePerNight * h.Hotel.NoOfNights)).ToList().First();
         }
     }
